@@ -5,8 +5,8 @@ build-backend = "hatchling.build"
 [project]
 name = "pygentic"
 version = "0.1.0"
-description = "Self-generating Pydantic models powered by Mirascope"
-license = "MIT with Commons Clause"
+description = "LLM Mad-libs - Self-generating Pydantic models powered by Mirascope"
+license = {file = "LICENSE"}
 authors = [{name = "Bullish Design", email = "BullishDesignEngineering@gmail.com"}]
 requires-python = ">=3.12"
 dependencies = [

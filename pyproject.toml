@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pygentic"
+version = "0.1.0"
+description = "Self-generating Pydantic models powered by Mirascope"
+license = "MIT with Commons Clause"
+authors = [{name = "Bullish Design", email = "BullishDesignEngineering@gmail.com"}]
+requires-python = ">=3.12"
+dependencies = [
+    "mirascope>=1.25.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "mypy>=1.0.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["pygentic"]

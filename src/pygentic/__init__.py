@@ -21,10 +21,10 @@ from .simple import SimpleLLM
 from .conversation import ConversationLLM, ConversationMessage, ConversationState
 from .genmodel import GenModel, generated_property, GenField
 
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 __all__ = [
     "LLMConfig",
-    "BaseLLM", 
+    "BaseLLM",
     "LLMResponse",
     "SimpleLLM",
     "ConversationLLM",
@@ -40,14 +40,11 @@ def create_simple_llm(
     provider: str = "openai",
     model: str = "gpt-4o-mini",
     temperature: float = 0.7,
-    **kwargs
+    **kwargs,
 ) -> SimpleLLM:
     """Factory function to create a SimpleLLM with common settings."""
     config = LLMConfig(
-        provider=provider,
-        model=model,
-        temperature=temperature,
-        **kwargs
+        provider=provider, model=model, temperature=temperature, **kwargs
     )
     return SimpleLLM(config=config)
 
@@ -57,14 +54,10 @@ def create_conversation(
     model: str = "gpt-4o-mini",
     temperature: float = 0.7,
     state_file: str | None = None,
-    **kwargs
+    **kwargs,
 ) -> ConversationLLM:
     """Factory function to create a ConversationLLM with common settings."""
     config = LLMConfig(
-        provider=provider,
-        model=model,
-        temperature=temperature,
-        **kwargs
+        provider=provider, model=model, temperature=temperature, **kwargs
     )
     return ConversationLLM(config=config, state_file=state_file)
-

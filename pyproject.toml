@@ -4,14 +4,15 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pygentic"
-version = "0.1.0"
+version = "0.1.2"
 description = "LLM Mad-libs - Self-generating Pydantic models powered by Mirascope"
 license = {file = "LICENSE"}
 authors = [{name = "Bullish Design", email = "BullishDesignEngineering@gmail.com"}]
 requires-python = ">=3.12"
 dependencies = [
-    "mirascope>=1.25.0",
+    "mirascope[google,anthropic,openai]>=1.25.0",
     "pydantic>=2.0.0",
+    "python-dotenv>=1.1.0",
 ]
 
 [project.optional-dependencies]
@@ -22,4 +23,4 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["pygentic"]
+packages = ["src/pygentic"]

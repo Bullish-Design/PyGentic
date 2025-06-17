@@ -177,7 +177,11 @@ class GenModel(BaseModel):
         for field_name, field in self.__fields__.items():
             # print(f"          Processing field: {field_name:15}: {field}")
             field_type = field.annotation
-            description = field.description or None
+            exclude = field.exclude or None
+            if exclude:
+                description = None
+            else:
+                description = field.description or None
 
             ## Extract description from Field()
             # if hasattr(field, "field_info") and field.field_info:

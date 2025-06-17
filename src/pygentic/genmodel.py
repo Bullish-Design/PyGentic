@@ -50,7 +50,7 @@ def generated_property(
 
             # Get base config and create overrides
             config = self._get_llm_config()
-            print(f"\n\nUsing LLM config:\n    {config}\n")
+            # print(f"\n\nUsing LLM config:\n    {config}\n")
             if provider:
                 config.provider = provider
             if model:
@@ -61,7 +61,7 @@ def generated_property(
                 # else:
                 #    del config.temperature
                 #    config.call_params = {"temperature": temperature}
-            print(f"Updated LLM config:\n    {config}\n\n")
+            # print(f"Updated LLM config:\n    {config}\n\n")
 
             # Format the docstring template
             prompt = func.__doc__ or f"Generate {func.__name__}"
@@ -91,7 +91,7 @@ def generated_property(
             # print(f"\nLLM Kwargs:\n    {llm_kwargs}\n")
             # for key, val in llm_kwargs.items():
             #    print(f"    LLM call parameter: {key} = {val}")
-            print(f"Config Call Params:\n    {config.get_call_params()}\n\n")
+            # print(f"Config Call Params:\n    {config.get_call_params()}\n\n")
             # print(f"\n\n")
 
             # Make LLM call

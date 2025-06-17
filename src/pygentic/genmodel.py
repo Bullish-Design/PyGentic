@@ -175,16 +175,16 @@ class GenModel(BaseModel):
 
         # Get field order from model definition
         for field_name, field in self.__fields__.items():
-            print(f"          Processing field: {field_name:15}: {field}")
+            # print(f"          Processing field: {field_name:15}: {field}")
             field_type = field.annotation
-            description = None
+            description = field.description or None
 
-            # Extract description from Field()
-            if hasattr(field, "field_info") and field.field_info:
-                print(
-                    f"          Field: {field_name}, Type: {field_type}, Full: {field.field_info}"
-                )
-                description = field.field_info.description
+            ## Extract description from Field()
+            # if hasattr(field, "field_info") and field.field_info:
+            #    print(
+            #        f"          Field: {field_name}, Type: {field_type}, Full: {field.field_info}"
+            #    )
+            #    description = field.field_info.description
 
             field_info.append((field_name, field_type, description))
 

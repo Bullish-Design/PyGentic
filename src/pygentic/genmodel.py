@@ -180,6 +180,9 @@ class GenModel(BaseModel):
 
             # Extract description from Field()
             if hasattr(field, "field_info") and field.field_info:
+                print(
+                    f"          Field: {field_name}, Type: {field_type}, Full: {field.field_info}"
+                )
                 description = field.field_info.description
 
             field_info.append((field_name, field_type, description))

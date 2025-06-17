@@ -1,7 +1,7 @@
 #!/usr/bin/env uv run
 # /// script
 # dependencies = [
-#     "mirascope[all]",
+#     "mirascope[openai, google]",
 #     "pydantic",
 #     "pygentic @ git+https://github.com/Bullish-Design/PyGentic.git"
 # ]
@@ -85,58 +85,53 @@ class ProductReview(GenModel):
 
 def demo_basic_usage():
     """Demo basic PyGentic usage."""
-    print("=== PyGentic Basic Usage ===")
+    print("\n=== PyGentic Basic Usage ===")
 
     # Set global config
     config = LLMConfig(provider="openai", model="gpt-4o-mini", temperature=0.7)
     BookAnalyst.set_llm_config(config)
 
     # Create instance - fields auto-populate
-    book = BookAnalyst(title="1984", author="George Orwell")
+    book = BookAnalyst(title="The Peripheral", author="William Gibson")
 
-    print(book)
-    print()
+    print(f"{book}\n")
 
     # Access generated properties (cached after first call)
-    print(f"Analysis: {book.detailed_analysis[:100]}...")
-    print(f"Similar books: {book.similar_books[:3]}")
-    print()
+    print(f"Analysis: {book.detailed_analysis}...\n")
+    print(f"Similar books: {book.similar_books}\n")
 
 
 def demo_persistence():
     """Demo output and rehydration."""
-    print("=== PyGentic Persistence ===")
+    print("\n=== PyGentic Persistence ===")
 
     # Create with output file
     product = ProductReview(
         product_name="iPhone 15 Pro", brand="Apple", output_file="product_review.jsonl"
     )
 
-    print("Generated product review:")
-    print(product)
-    print()
+    print(f"Generated product review:\n{product}\n")
 
     # Access properties to cache them
     rating = product.overall_rating
     recommendation = product.buying_recommendation
 
     # Save to JSONL
-    product.output()
-    print("Saved to product_review.jsonl")
+    product.output("product_review.jsonl")
+    print(f"Saved to product_review.jsonl\n")
 
     # Rehydrate without LLM calls
     rehydrated = ProductReview.from_jsonl("product_review.jsonl")
-    print(f"Rehydrated rating: {rehydrated.overall_rating}")
-    print(f"Rehydrated recommendation: {rehydrated.buying_recommendation}")
+    print(f"Rehydrated rating: {rehydrated.overall_rating}\n")
+    print(f"Rehydrated recommendation: {rehydrated.buying_recommendation}\n")
 
     # Clean up
     Path("product_review.jsonl").unlink(missing_ok=True)
-    print()
 
 
 def demo_dependency_tracking():
     """Demo dependency tracking in generated properties."""
-    print("=== PyGentic Dependency Tracking ===")
+    print("\n=== PyGentic Dependency Tracking ===")
 
     class DynamicAnalysis(GenModel):
         """You are a data analyst. Provide insights based on current metrics."""
@@ -161,22 +156,20 @@ def demo_dependency_tracking():
         competitor_price=179.99,
     )
 
-    print(f"Initial price analysis: {analysis.price_analysis[:100]}...")
-    print(f"Initial recommendation: {analysis.recommendation[:100]}...")
-    print()
+    print(f"Initial price analysis: {analysis.price_analysis}...")
+    print(f"Initial recommendation: {analysis.recommendation}...\n")
 
     # Update competitor price - should invalidate dependent properties
-    print("Updating competitor price to $220...")
+    print("Updating competitor price to $220...\n")
     analysis.competitor_price = 220.0
 
-    print(f"Updated price analysis: {analysis.price_analysis[:100]}...")
-    print(f"Updated recommendation: {analysis.recommendation[:100]}...")
-    print()
+    print(f"Updated price analysis: {analysis.price_analysis}...")
+    print(f"Updated recommendation: {analysis.recommendation}...\n")
 
 
 def demo_advanced_features():
     """Demo advanced PyGentic features."""
-    print("=== PyGentic Advanced Features ===")
+    print("\n=== PyGentic Advanced Features ===")
 
     class ResearchPaper(GenModel):
         """You are an academic researcher. Provide rigorous, well-sourced
@@ -201,38 +194,41 @@ def demo_advanced_features():
     # Configure for academic use
     ResearchPaper.set_llm_config(
         LLMConfig(
-            provider="openai",
-            model="gpt-4o-mini",
-            temperature=0.3,
+            provider="google",
+            model="gemini-2.0-flash",
+            temperature=0.3,  # Call this way for OpenAI
             system_prompt="Focus on rigorous academic standards and methodology.",
         )
     )
 
-    paper = ResearchPaper(topic="climate adaptation", field="environmental science")
+    paper = ResearchPaper(
+        topic="Economic and Societal upheval from the introduction of LLMs",
+        field="Economics and Sociology",
+    )
 
-    print("Research Paper:")
-    print(f"Topic: {paper.topic}")
-    print(f"Field: {paper.field}")
-    print(f"Questions: {paper.research_questions}")
-    print(f"Methodology: {paper.methodology}")
-    print(f"Abstract: {paper.abstract}")
+    print("\nResearch Paper:")
+    print(f"  Topic: {paper.topic}")
+    print(f"  Field: {paper.field}")
+    print(f"  Questions: {paper.research_questions}")
+    print(f"  Methodology: {paper.methodology}")
+    print(f"  Abstract: {paper.abstract}")
     print()
 
 
 def main():
     """Run PyGentic demos."""
-    print("PyGentic - Self-Generating Pydantic Models\n")
+    print("\nPyGentic - Self-Generating Pydantic Models\n")
 
     try:
         demo_basic_usage()
         demo_persistence()
-        demo_dependency_tracking()
+        # demo_dependency_tracking()
         demo_advanced_features()
 
-        print("PyGentic demo completed successfully!")
+        print("\nPyGentic demo completed successfully!\n")
 
     except Exception as e:
-        print(f"Demo failed: {e}")
+        print(f"Demo failed: \n\n{e}\n\n")
         import traceback
 
         traceback.print_exc()

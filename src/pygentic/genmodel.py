@@ -17,7 +17,7 @@ import json
 from pathlib import Path
 from typing import Any, Callable, TypeVar, get_type_hints, get_origin, get_args, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from mirascope import llm, Messages
 
 from .config import LLMConfig
@@ -50,12 +50,18 @@ def generated_property(
 
             # Get base config and create overrides
             config = self._get_llm_config()
+            print(f"\n\nUsing LLM config:\n    {config}\n")
             if provider:
                 config.provider = provider
             if model:
                 config.model = model
             if temperature is not None:
+                # if provider == "openai":
                 config.temperature = temperature
+                # else:
+                #    del config.temperature
+                #    config.call_params = {"temperature": temperature}
+            print(f"Updated LLM config:\n    {config}\n\n")
 
             # Format the docstring template
             prompt = func.__doc__ or f"Generate {func.__name__}"
@@ -80,12 +86,20 @@ def generated_property(
                     ):
                         final_response_model = return_type
 
+            llm_kwargs = {k: v for k, v in kwargs.items() if k != "depends_on"}
+            # print(f"\n\nOG Kwargs:\n    {kwargs}")
+            # print(f"\nLLM Kwargs:\n    {llm_kwargs}\n")
+            # for key, val in llm_kwargs.items():
+            #    print(f"    LLM call parameter: {key} = {val}")
+            print(f"Config Call Params:\n    {config.get_call_params()}\n\n")
+            # print(f"\n\n")
+
             # Make LLM call
             @llm.call(
                 provider=config.provider,
                 model=config.model,
                 response_model=final_response_model,
-                **kwargs,
+                **llm_kwargs,
             )
             def _generate() -> dict[str, Any]:
                 return {"messages": messages, "call_params": config.get_call_params()}
@@ -110,6 +124,12 @@ def generated_property(
 class GenModel(BaseModel):
     """PyGentic base class for self-generating Pydantic models."""
 
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        extra="allow",
+        # json_encoders={Path: lambda p: str(p)},
+    )
+
     _llm_config: LLMConfig | None = None
     output_file: Path | str | None = Field(
         default=None, description="File to save generated data", exclude=True
@@ -117,9 +137,10 @@ class GenModel(BaseModel):
 
     def __init__(self, output_file: Path | str | None = None, **data):
         """Initialize and auto-populate missing fields."""
+        super().__init__(**data)
+
         if output_file:
             self.output_file = Path(output_file)
-        super().__init__(**data)
         self._populate_missing_fields()
 
     @classmethod
@@ -412,6 +433,3 @@ class GenModel(BaseModel):
                 lines.append(f"    {prop_name}: <cached>")
 
         return "\n".join(lines)
-
-    class Config:
-        arbitrary_types_allowed = True

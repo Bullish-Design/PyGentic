@@ -53,7 +53,14 @@ class LLMConfig(BaseModel):
 
     def get_call_params(self) -> dict[str, Any]:
         """Get call parameters for Mirascope."""
-        params = {"temperature": self.temperature, **self.call_params}
+        if hasattr(self, "temperature") and self.temperature is not None:
+            params = {"temperature": self.temperature, **self.call_params}
+        else:
+            params = {**self.call_params}
+        if self.provider != "openai":
+            if hasattr(self, "temperature") and self.temperature is not None:
+                # params["temperature"] = self.temperature
+                del self.temperature
         if self.max_tokens is not None:
             params["max_tokens"] = self.max_tokens
         return params

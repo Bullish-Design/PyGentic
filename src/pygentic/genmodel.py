@@ -175,6 +175,7 @@ class GenModel(BaseModel):
 
         # Get field order from model definition
         for field_name, field in self.__fields__.items():
+            print(f"          Processing field: {field_name:15}: {field}")
             field_type = field.annotation
             description = None
 

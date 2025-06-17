@@ -14,7 +14,8 @@ PyGentic Demo - Self-generating Pydantic models powered by Mirascope.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Any
+from pydantic import BaseModel, Field
 
 from pygentic import GenModel, generated_property, GenField, LLMConfig
 
@@ -83,6 +84,233 @@ class ProductReview(GenModel):
         pass
 
 
+class RhymeGroup(BaseModel):
+    """A model to represent rhyming groups of words."""
+
+    rhyme_ending: str
+    words: List[str]
+
+    def __str__(self):
+        return f"{self.rhyme_ending}: {', '.join(self.words)}"
+
+
+class SemanticGroup(BaseModel):
+    """A model to represent a semantic group of words."""
+
+    category: str
+    words: List[str]
+
+    def __str__(self):
+        return f"{self.category}: {', '.join(self.words)}"
+
+
+class PhoneticPattern(BaseModel):
+    """A model to represent phonetic patterns in words."""
+
+    pattern: str
+    words: List[str]
+
+    def __str__(self):
+        return f"{self.pattern}: {', '.join(self.words)}"
+
+
+class VocabularyAnalyzer(GenModel):
+    """You are an expert reading specialist and linguist. You analyze
+    vocabulary lists to identify patterns, group related words, and
+    find educational connections that help young learners."""
+
+    level: str
+    grade: str
+    lesson: str
+    words: List[str]
+    word_count: int
+
+    # Auto-generated groupings
+    rhyme_groups: List[RhymeGroup] = GenField(
+        prompt="Group the words {words} by rhyming patterns. Return as a dictionary where keys are the rhyme endings (like 'at', 'ick', 'ow') and values are lists of words that rhyme. Only include groups with 2+ words."
+    )
+
+    semantic_groups: List[SemanticGroup] = GenField(
+        prompt="""Group the words {words} by meaning/topic. Create logical 
+        categories like 'animals', 'actions', 'colors', 'family', etc. 
+        Return as dictionary with category names as keys and word lists 
+        as values."""
+    )
+
+    phonetic_patterns: List[PhoneticPattern] = GenField(
+        prompt="""Group the words {words} by phonetic patterns like consonant 
+        blends, vowel sounds, word endings. Focus on patterns useful for 
+        grade {grade} phonics instruction. Return as dictionary."""
+    )
+
+    # difficulty_assessment: str = GenField(
+    #     prompt="""Assess the overall difficulty of this {word_count}-word
+    #     vocabulary list for grade {grade}. Consider word length, phonetic
+    #     complexity, and age-appropriateness. Provide 2-3 sentences."""
+    # )
+
+    @generated_property(temperature=0.3)
+    def topic_suggestions(self) -> str:
+        """Based on the {rhyme_groups}, {semantic_groups}, and
+        {phonetic_patterns}, suggest 5 potential story topics
+        for grade {grade} students learning these words."""
+        pass
+
+    @generated_property()
+    def story_plot_suggestions(self, topic: str) -> str:
+        """Given a topic like '{topic}' and the following vocab list: {words}
+
+        Suggest a simple story plot that incorporates the vocabulary words. Focus on
+        creating an engaging narrative for young readers at a grade {grade} reading level.
+        """
+        pass
+
+    @classmethod
+    def from_vocab_data(cls, vocab_data: Dict[str, Any]) -> VocabularyAnalyzer:
+        """Create VocabularyAnalyzer from parsed JSONL vocabulary data."""
+        model = cls(
+            level=vocab_data["level"],
+            grade=str(vocab_data["grade"]),
+            lesson=str(vocab_data["lesson"]),
+            words=vocab_data["words"],
+            word_count=vocab_data["word_count"],
+        )
+        print(f"    VocabularyAnalyzer created for level {model.level}:")
+        print(f"\n{model}\n")
+        return model
+
+
+class StoryAnalyzer(GenModel):
+    """You are an expert children's literature specialist and educator.
+    You analyze children's stories for educational value, narrative
+    quality, and age-appropriateness. Use precise, professional judgment."""
+
+    story_id: str
+    story_text: str
+    # timestamp: datetime
+    target_grade: str = "K-2"  # Default for early readers
+
+    # Story quality ratings (1-10 scale)
+    story_structure_rating: int = GenField(
+        prompt="""Rate the story structure of this children's story on a 
+        scale of 1-10. Consider: clear beginning/middle/end, logical 
+        progression, appropriate pacing for young readers. Story: {story_text}"""
+    )
+
+    logical_flow_rating: int = GenField(
+        prompt="""Rate the logical flow of this story on a scale of 1-10. 
+        Consider: coherent sequence of events, cause-and-effect relationships, 
+        smooth transitions. Story: {story_text}"""
+    )
+
+    vocab_usage_rating: int = GenField(
+        prompt="""Rate the vocabulary usage in this story on a scale of 1-10. 
+        Consider: age-appropriate word choices, repetition for learning, 
+        variety without overwhelming young readers. Story: {story_text}"""
+    )
+
+    child_message_rating: int = GenField(
+        prompt="""Rate the appropriateness and value of this story's message 
+        for children on a scale of 1-10. Consider: positive themes, moral 
+        lessons, emotional impact, safety. Story: {story_text}"""
+    )
+
+    # Detailed analysis
+    story_themes: List[str] = GenField(
+        prompt="""Identify 2-4 main themes in this children's story. 
+        Focus on themes relevant to young readers. Story: {story_text}"""
+    )
+
+    # vocabulary_level: str = GenField(
+    #     prompt="""Assess the vocabulary level of this story. Is it appropriate
+    #     for kindergarten, 1st grade, 2nd grade, or higher? Consider word
+    #     complexity and sentence structure. Story: {story_text}"""
+    # )
+
+    @generated_property(temperature=0.4)
+    def detailed_critique(self) -> str:
+        """Provide a comprehensive 150-word critique of this story,
+        considering the ratings: structure ({story_structure_rating}/10),
+        flow ({logical_flow_rating}/10), vocabulary ({vocab_usage_rating}/10),
+        and message ({child_message_rating}/10). Include specific
+        improvement suggestions."""
+        pass
+
+    # @generated_property()
+    # def educational_value(self) -> str:
+    #     """Analyze the educational value of this story. What skills
+    #     does it help develop? What learning opportunities does it provide?
+    #     Consider the {story_themes} and {vocabulary_level}."""
+    #     pass
+
+    # @generated_property(temperature=0.2)
+    # def overall_score(self) -> float:
+    #     """Calculate an overall quality score (1-10) based on the individual
+    #     ratings: structure {story_structure_rating}, flow {logical_flow_rating},
+    #     vocabulary {vocab_usage_rating}, message {child_message_rating}.
+    #     Return only the numeric score."""
+    #     pass
+
+    @generated_property()
+    def improvement_suggestions(self) -> List[str]:
+        """Based on the ratings and analysis, provide 3-5 specific,
+        actionable suggestions for improving this story for young readers."""
+        pass
+
+    @classmethod
+    def from_story_data(cls, story_line: str) -> StoryAnalyzer:
+        """Create StoryAnalyzer from parsed JSONL story data line."""
+        parts = story_line.strip().split(" | ", 2)
+        if len(parts) != 3:
+            raise ValueError(f"Invalid story data format: {story_line}")
+
+        story_id = parts[0]
+        timestamp_str = parts[1]
+        story_text = parts[2]
+
+        # Parse timestamp
+        # timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+
+        return cls(
+            story_id=story_id,
+            story_text=story_text,
+            # timestamp=timestamp
+        )
+
+
+def demo_vocab_analysis():
+    """Demo vocabulary analysis using PyGentic."""
+    print("\n=== PyGentic Vocabulary Analysis ===")
+    # Load vocabulary data from JSONL file
+    vocab_data = {
+        "level": "K-2",
+        "grade": 1,
+        "lesson": 1,
+        "words": ["cat", "hat", "bat", "rat", "mat"],
+        "word_count": 5,
+    }
+    # Create VocabularyAnalyzer instance
+    # analyzer = VocabularyAnalyzer.from_vocab_data(vocab_data)
+    analyzer = VocabularyAnalyzer(
+        level=vocab_data["level"],
+        grade=str(vocab_data["grade"]),
+        lesson=str(vocab_data["lesson"]),
+        words=vocab_data["words"],
+        word_count=vocab_data["word_count"],
+    )
+
+    # Access generated properties
+    print(f"\nRhyme groups: {analyzer.rhyme_groups}")
+    print(f"\nSemantic groups: {analyzer.semantic_groups}")
+    print(f"\nPhonetic patterns: {analyzer.phonetic_patterns}\n")
+    # Generate topic suggestions
+    print(f"\nSuggested topics: {analyzer.topic_suggestions}\n")
+    # Generate story plot suggestion for a specific topic
+    # topic = analyzer.topic_suggestions[0]
+    # print(f"\nStory plot suggestion for topic '{topic}':")
+    # print(analyzer.story_plot_suggestions(topic))
+
+
 def demo_basic_usage():
     """Demo basic PyGentic usage."""
     print("\n=== PyGentic Basic Usage ===")
@@ -95,6 +323,13 @@ def demo_basic_usage():
     book = BookAnalyst(title="The Peripheral", author="William Gibson")
 
     print(f"{book}\n")
+    print(f"    Generated book details:")
+    print(f"      Title: {book.title}")
+    print(f"      Author: {book.author}")
+    print(f"      Genre: {book.genre}")
+    print(f"      Publication Year: {book.publication_year}")
+    print(f"      Themes: {book.themes}")
+    print(f"      Significance: {book.significance}\n")
 
     # Access generated properties (cached after first call)
     print(f"Analysis: {book.detailed_analysis}...\n")
@@ -221,9 +456,11 @@ def main():
 
     try:
         demo_basic_usage()
-        demo_persistence()
+        # demo_persistence()
         # demo_dependency_tracking()
-        demo_advanced_features()
+        # demo_advanced_features()
+
+        demo_vocab_analysis()
 
         print("\nPyGentic demo completed successfully!\n")
 

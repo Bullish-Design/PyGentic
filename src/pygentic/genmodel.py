@@ -189,6 +189,7 @@ class GenModel(BaseModel):
     def _populate_missing_fields(self) -> None:
         """Populate fields that are None and have descriptions."""
         field_info = self._get_field_info()
+        print(f"\n\nField Info:\n{field_info}\n\n")
 
         for field_name, field_type, description in field_info:
             # Skip if field already has value

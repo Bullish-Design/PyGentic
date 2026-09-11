@@ -1,0 +1,4 @@
+schema = 1
+project = "PyGentic"
+groups = ["base"]
+policy = "stable"
